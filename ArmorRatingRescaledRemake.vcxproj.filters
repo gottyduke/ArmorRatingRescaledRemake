@@ -2,9 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Hooks.cpp" />
+    <ClCompile Include="src\Settings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\version.h" />
+    <ClInclude Include="include\Hooks.h" />
+    <ClInclude Include="include\Settings.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
