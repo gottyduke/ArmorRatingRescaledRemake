@@ -3,6 +3,7 @@
 ## Build Dependencies
 * [Json2Settings](https://github.com/Ryan-rsm-McKenzie/Json2Settings)
 * [CommonLibSSE](https://github.com/Ryan-rsm-McKenzie/CommonLibSSE)
+* [DKUtil](https://github.com/gottyduke/DKUtil)
 
 ## End User Dependencies
 * [SKSE64](https://skse.silverlock.org/)
