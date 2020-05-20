@@ -1,10 +1,9 @@
 #pragma once
 
 
-float RescaleArmor(float a_hidden, float a_vanilla);
-
-
 namespace Hooks
-{	
-	void InstallHooks();
+{
+	float Hook_RescaleArmor(float a_hidden, float a_vanilla);
+
+	bool InstallHooks();
 }

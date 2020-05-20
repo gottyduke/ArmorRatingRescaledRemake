@@ -64,10 +64,9 @@ extern "C"
 		}
 		
 		if (Settings::LoadSettings()) {
-			_MESSAGE("Successfully loaded json file");
+			_MESSAGE("Settings loaded successfully");
 		} else {
-			_FATALERROR("Failed to load settings");
-
+			_FATALERROR("Failed to load settings\n");
 			return false;
 		}
 		
@@ -83,11 +82,17 @@ extern "C"
 		}
 		
 		if (!SKSE::AllocTrampoline(1 << 6)) {
-			_FATALERROR("Failed to allocate trampoline");
+			_FATALERROR("Failed to allocate trampoline\n");
 			return false;
 		}
 
-		Hooks::InstallHooks();
+		if (Hooks::InstallHooks()) {
+			_MESSAGE("Hooks installed successfully");
+		} else {
+			_FATALERROR("Failed to install hooks!\n");
+			return false;
+		}
+
 
 		return true;
 	}

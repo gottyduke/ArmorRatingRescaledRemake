@@ -15,5 +15,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />
+    <None Include="!QuickUpdate.ps1" />
+    <None Include=".gitignore" />
+    <None Include="ArmorRatingRescaledRemake.json" />
+    <None Include="LICENSE" />
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

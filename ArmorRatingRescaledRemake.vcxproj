@@ -37,7 +37,12 @@
     <ResourceCompile Include="version.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="!QuickUpdate.ps1" />
+    <None Include=".gitignore" />
+    <None Include="ArmorRatingRescaledRemake.json" />
     <None Include="exports.def" />
+    <None Include="LICENSE" />
+    <None Include="README.md" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
