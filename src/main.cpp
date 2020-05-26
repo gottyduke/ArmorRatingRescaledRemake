@@ -81,7 +81,7 @@ extern "C"
 			}
 		}
 		
-		if (!SKSE::AllocTrampoline(1 << 6)) {
+		if (!SKSE::AllocTrampoline(34)) {
 			_FATALERROR("Failed to allocate trampoline\n");
 			return false;
 		}

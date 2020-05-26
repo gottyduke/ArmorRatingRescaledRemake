@@ -1,7 +1,10 @@
 #include "Hooks.h"
 #include "Settings.h"
 
-#include "DKUtil/Hook.h"
+// can reduce trampoline size from 60B to 34B
+#define DKUTIL_HOOK_SMART_ALLOC
+#define DKUTIL_HOOK_VERBOSE
+#include "DKUtil/Hook.hpp"
 
 #include "RE/Skyrim.h"
 
@@ -11,14 +14,13 @@ namespace
 	constexpr std::uint64_t FUNC_1_ID = 37605;
 	constexpr std::uintptr_t FUNC_1_OFFSET_START = 0x82;
 	constexpr std::uintptr_t FUNC_1_OFFSET_END = 0x99;
-	
+
 	// pre patch:
 	// xorps xmm1, xmm1	; zero out xmm1
 	// movss xmm1, xmm8	; pass vanillaResist as 2nd argument
 	// post	patch:
 	// movss xmm8, xmm0	; store RescaleArmor result to vanillaResist
 	constexpr BranchInstruction FUNC_1_INSTRUCTION = {
-		reinterpret_cast<std::uintptr_t>(&Hooks::Hook_RescaleArmor),
 		"\x0F\x57\xC9\xF3\x0F\x10\x4D\x77",
 		8,
 		"\xF3\x0F\x11\x45\x77",
@@ -35,7 +37,6 @@ namespace
 	// post patch:
 	// movss [rbp+0x77], xmm0	; store RescaleArmor result to vanillaResist
 	constexpr BranchInstruction FUNC_2_INSTRUCTION = {
-		reinterpret_cast<std::uintptr_t>(&Hooks::Hook_RescaleArmor),
 		"\x0F\x57\xC9\xF3\x41\x0F\x10\xC8",
 		8,
 		"\xF3\x44\x0F\x10\xC0",
@@ -63,19 +64,25 @@ namespace Hooks
 		return f;
 	}
 
-	
+
 	bool InstallHooks()
 	{
 		auto success = true;
-		
+		const auto funcAddr = std::uintptr_t(&Hook_RescaleArmor);
 		// scale armor resistance
 		if (std::isfinite(*Settings::armorScalingFactor) && *Settings::armorScalingFactor > 0) {
 			*Settings::armorScalingFactor *= 5.0f;
 		}
-		
-		success &= DKUtil::Hook::BranchToFunction<FUNC_1_ID, FUNC_1_OFFSET_START, FUNC_1_OFFSET_END>(FUNC_1_INSTRUCTION);
 
-		success &= DKUtil::Hook::BranchToFunction<FUNC_2_ID, FUNC_2_OFFSET_START, FUNC_2_OFFSET_END>(FUNC_2_INSTRUCTION);
+		success &= DKUtil::Hook::BranchToFunction<FUNC_1_ID, FUNC_1_OFFSET_START, FUNC_1_OFFSET_END>(
+			funcAddr,
+			FUNC_1_INSTRUCTION
+		);
+
+		success &= DKUtil::Hook::BranchToFunction<FUNC_2_ID, FUNC_2_OFFSET_START, FUNC_2_OFFSET_END>(
+			funcAddr,
+			FUNC_2_INSTRUCTION
+		);
 
 		return success;
 	}
