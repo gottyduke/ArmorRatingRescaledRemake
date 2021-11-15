@@ -1,0 +1,10 @@
+{
+    "name":  "arrr",
+    "version-string":  "1.0.1",
+    "description":  "An SKSE plugin for skyrim special edition.",
+    "license":  "MIT",
+    "dependencies":  [
+                         "boost-stl-interfaces",
+                         "spdlog"
+                     ]
+}
