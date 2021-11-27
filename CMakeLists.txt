@@ -153,7 +153,7 @@ endif ()
 target_precompile_headers(
 	${PROJECT_NAME}
 	PRIVATE
-		src/PCH.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/PCH.h
 )
 
 # post build event
@@ -162,7 +162,7 @@ add_custom_command(
 		${PROJECT_NAME}
 	POST_BUILD
 		COMMAND 
-			powershell -NoProfile -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/!Update.ps1" "COPY" "${PROJECT_VERSION}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(ConfigurationName)" "${PROJECT_NAME}"
+			powershell -NoProfile -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/!Update.ps1" "COPY" "${PROJECT_VERSION}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$(ConfigurationName)" "${PROJECT_NAME}" "${CMAKE_CURRENT_SOURCE_DIR}/src/PCH.h"
 		COMMENT 
 			"Updating DLL to MO2 directory..."
 )

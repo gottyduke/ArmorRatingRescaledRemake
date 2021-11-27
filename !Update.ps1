@@ -19,11 +19,10 @@ function Walk-Files {
         try {
             foreach ($directory in $a_directory) {
                 Write-Host "`t<$a_parent/$directory>"
-                $_tree = Get-ChildItem "$a_parent/$directory" -Recurse -File -Include $a_extention -Exclude Version.h -ErrorAction SilentlyContinue | Resolve-Path -Relative
-                foreach ($leaf in $_tree) {
-                    Write-Host "`t`t<$leaf>"
-                    $leaf = $leaf.SubString(2).Insert(0, "`n`t") -replace '\\', '/' # \\/\//\/\\/\\\/\\/?!?
-                    $_generated = $_generated + $leaf
+                Get-ChildItem "$a_parent/$directory" -Recurse -File -Include $a_extention -Exclude Version.h -ErrorAction SilentlyContinue | Resolve-Path -Relative | ForEach-Object {
+                    Write-Host "`t`t<$_>"
+                    $file = $_.SubString(2).Insert(0, "`n`t") -replace '\\', '/' # \\/\//\/\\/\\\/\\/?!?
+                    $_generated = $_generated + $file
                 }
             }
         } finally {
@@ -35,81 +34,94 @@ function Walk-Files {
 }
 
 # args
-$mode = $args[0] ## COPY SOURCEGEN DISTRIBUTE
-$version = $args[1]
-$path = $args[2]
-$project = $args[3]
+$a_mode = $args[0] ## COPY SOURCEGEN DISTRIBUTE
+$a_version = $args[1]
+$a_path = $args[2]
+$a_project = $args[3]
+$a_pch = $args[4]
 
 # project path
 $Folder = $PSScriptRoot | Split-Path -Leaf
-$ModPath = "$env:MO2Path/mods/$project"
 
-Write-Host "`n`t<$Folder> [$mode] BEGIN"
-if ($mode -eq "COPY") { # post build copy event
-    Write-Host "`tCurrent $Folder $version"
+Write-Host "`n`t<$Folder> [$a_mode] BEGIN"
+if ($a_mode -eq "COPY") { # post build copy event
+    $GameBase
+    $MO2Base
+    
+    [System.IO.File]::ReadLines("$a_pch") | ForEach-Object {
+        if ($_ -eq "#define ANNIVERSARY_EDITION true") {
+            Write-Host "`tCurrent $Folder $a_version | ANNIVERSARY EDITION"
+            $GameBase = $env:SkyrimAEPath
+        } elseif ($_ -eq "#define ANNIVERSARY_EDITION false") {
+            Write-Host "`tCurrent $Folder $a_version | SPECIAL EDITION"
+            $GameBase = $env:SkyrimSEPath
+        }
+    }
+
+    $MO2Base = "$GameBase/MO2/mods/$a_project"
 
     # binary
     Write-Host "`tCopying binary file..."
-    New-Item -Type dir "$ModPath/SKSE/Plugins" -Force | Out-Null
-    Copy-Item "$path/$project.dll" "$ModPath/SKSE/Plugins/$project.dll" -Force
+    New-Item -Type dir "$MO2Base/SKSE/Plugins" -Force | Out-Null
+    Copy-Item "$a_path/$a_project.dll" "$MO2Base/SKSE/Plugins/$a_project.dll" -Force
     Write-Host "`tDone!"
 
     # configs
-    if (Test-Path "$PSScriptRoot/$project.ini" -PathType Leaf) {
+    if (Test-Path "$PSScriptRoot/$a_project.ini" -PathType Leaf) {
         Write-Host "`tCopying ini configuration..."
-        Copy-Item "$PSScriptRoot/$project.ini" "$ModPath/SKSE/Plugins/$project.ini" -Force
+        Copy-Item "$PSScriptRoot/$a_project.ini" "$MO2Base/SKSE/Plugins/$a_project.ini" -Force
         Write-Host "`tDone!"
     }
-    if (Test-Path "$PSScriptRoot/$project.json" -PathType Leaf) {
+    if (Test-Path "$PSScriptRoot/$a_project.json" -PathType Leaf) {
         Write-Host "`tCopying json configuration..."
-        Copy-Item "$PSScriptRoot/$project.json" "$ModPath/SKSE/Plugins/$project.json" -Force
+        Copy-Item "$PSScriptRoot/$a_project.json" "$MO2Base/SKSE/Plugins/$a_project.json" -Force
         Write-Host "`tDone!"
     }    
-    if (Test-Path "$PSScriptRoot/$project.toml" -PathType Leaf) {
+    if (Test-Path "$PSScriptRoot/$a_project.toml" -PathType Leaf) {
         Write-Host "`tCopying toml configuration..."
-        Copy-Item "$PSScriptRoot/$project.toml" "$ModPath/SKSE/Plugins/$project.toml" -Force
+        Copy-Item "$PSScriptRoot/$a_project.toml" "$MO2Base/SKSE/Plugins/$a_project.toml" -Force
         Write-Host "`tDone!"
     }
 
     # papyrus
     if (Test-Path "$PSScriptRoot/Scripts/Source/*.psc" -PathType Leaf) {
         Write-Host "`tBuilding papyrus scripts..."
-        New-Item -Type dir "$ModPath/Scripts" -Force | Out-Null
-        & "$env:Skyrim64Path/Papyrus Compiler/PapyrusCompiler.exe" "$PSScriptRoot/Scripts/Source" -f="$env:Skyrim64Path/Papyrus Compiler/TESV_Papyrus_Flags.flg" -i="$env:Skyrim64Path/Data/Scripts/Source;./Scripts/Source" -o="$PSScriptRoot/Scripts" -a
+        New-Item -Type dir "$MO2Base/Scripts" -Force | Out-Null
+        & "$GameBase/Papyrus Compiler/PapyrusCompiler.exe" "$PSScriptRoot/Scripts/Source" -f="$GameBase/Papyrus Compiler/TESV_Papyrus_Flags.flg" -i="$GameBase/Data/Scripts/Source;./Scripts/Source" -o="$PSScriptRoot/Scripts" -a
         Write-Host "`tDone!"
 
         Write-Host "`tCopying papyrus scripts..."
-        Copy-Item "$PSScriptRoot/Scripts" "$ModPath" -Recurse -Force
+        Copy-Item "$PSScriptRoot/Scripts" "$MO2Base" -Recurse -Force
         Write-Host "`tDone!"
     }
 
     # shockwave
     if (Test-Path "$PSScriptRoot/Interface/*.swf" -PathType Leaf) {
         Write-Host "`tCopying shockwave files..."
-        New-Item -Type dir "$ModPath/Interface" -Force | Out-Null
-        Copy-Item "$PSScriptRoot/Interface" "$ModPath" -Recurse -Force
+        New-Item -Type dir "$MO2Base/Interface" -Force | Out-Null
+        Copy-Item "$PSScriptRoot/Interface" "$MO2Base" -Recurse -Force
         Write-Host "`tDone!"
     }
-} elseif ($mode -eq "SOURCEGEN") { # cmake sourcelist generation
+} elseif ($a_mode -eq "SOURCEGEN") { # cmake sourcelist generation
     Write-Host "`tGenerating CMake sourcelist..."
-    Remove-Item "$path/sourcelist.cmake" -Force -Confirm:$false -ErrorAction Ignore
+    Remove-Item "$a_path/sourcelist.cmake" -Force -Confirm:$false -ErrorAction Ignore
 
     $generated = "set(SOURCES" 
     $generated += $PSScriptRoot | Walk-Files
-    if ($path) {
-        $generated += $path | Walk-Files
+    if ($a_path) {
+        $generated += $a_path | Walk-Files
     }
     $generated += "`n)"
-    [IO.File]::WriteAllText("$path/sourcelist.cmake", $generated)
+    [IO.File]::WriteAllText("$a_path/sourcelist.cmake", $generated)
 
-    if ($version) {
+    if ($a_version) {
         # update vcpkg.json accordinly
-        $vcpkg = Get-Content "$PSScriptRoot/vcpkg.json" | ConvertFrom-Json
-        $vcpkg.'version-string' = $version
+        $vcpkg = [System.IO.File]::ReadAllText("$PSScriptRoot/vcpkg.json") | ConvertFrom-Json
+        $vcpkg.'version-string' = $a_version
         $vcpkg = $vcpkg | ConvertTo-Json
         [IO.File]::WriteAllText("$PSScriptRoot/vcpkg.json", $vcpkg) # damn you encoding
     }
-} elseif ($mode -eq 'DISTRIBUTE') { # update script to every project
+} elseif ($a_mode -eq 'DISTRIBUTE') { # update script to every project
     $WorkSpaceDir = (Get-ChildItem "Plugins" -Directory -Recurse) + (Get-ChildItem "Library" -Directory -Recurse) | Resolve-Path -Relative
     foreach ($directory in $WorkSpaceDir) {
         if (Test-Path "$directory/CMakeLists.txt" -PathType Leaf) {
@@ -119,4 +131,4 @@ if ($mode -eq "COPY") { # post build copy event
     }
 }
 
-Write-Host "`t<$Folder> [$mode] DONE"
+Write-Host "`t<$Folder> [$a_mode] DONE"

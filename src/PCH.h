@@ -1,5 +1,6 @@
 #pragma once
 
+#define ANNIVERSARY_EDITION true
 
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"

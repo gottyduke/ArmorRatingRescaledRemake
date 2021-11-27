@@ -4,6 +4,12 @@
 
 namespace
 {
+#if ANNIVERSARY_EDITION
+
+	// TODO: Update hook address for anniversary edition
+
+#else
+
 	constexpr std::uint64_t FUNC_1_ID = 37605;
 	constexpr std::uintptr_t FUNC_1_OFFSET_START = 0x82;
 	constexpr std::uintptr_t FUNC_1_OFFSET_END = 0x99;
@@ -35,11 +41,22 @@ namespace
 		"\xF3\x0F\x11\x45\x77",
 		5
 	};
+
+#endif
 }
 
 
 namespace Hooks
 {
+#if ANNIVERSARY_EDITION
+
+	void Install()
+	{
+		INFO("Hooks installed"sv);
+	}
+
+#else
+
 	// this is the original algorithm from underthesky (Armor Rating Rescaled LE)
 	// vanillaResist = VisibleArmorValue/100.0 * fArmorScalingFactor (default 0.12)
 	// hiddenResist = count_worn(helmet armor boots gauntlets shield) * fArmorBaseFactor (default 0.03)
@@ -68,13 +85,14 @@ namespace Hooks
 		DKUtil::Hook::BranchToID<FUNC_1_ID, FUNC_1_OFFSET_START, FUNC_1_OFFSET_END>(
 			&Hook_RescaleArmor,
 			FUNC_1_INSTRUCTION
-		);
+			);
 
 		DKUtil::Hook::BranchToID<FUNC_2_ID, FUNC_2_OFFSET_START, FUNC_2_OFFSET_END>(
 			&Hook_RescaleArmor,
 			FUNC_2_INSTRUCTION
-		);
+			);
 
 		INFO("Hooks installed"sv);
 	}
+#endif
 }
