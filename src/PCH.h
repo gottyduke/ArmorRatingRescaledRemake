@@ -1,21 +1,20 @@
 #pragma once
 
-#define ANNIVERSARY_EDITION true
 
+// CommonLib
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
-#include "DKUtil/Logger.hpp"
+using namespace std::literals;
 
-
-#include <unordered_set> // unordered_set
-#include <unordered_map> // unordered_map
-
-
+// Version
 #include "Version.h"
 
+// DKUtil
+#include "DKUtil/Logger.hpp"
+#include "DKUtil/Hook.hpp"
 
-using namespace std::literals;
+// Include
 
 
 #define DLLEXPORT __declspec(dllexport)
