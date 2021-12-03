@@ -6,5 +6,9 @@
     "dependencies":  [
                          "boost-stl-interfaces",
                          "spdlog"
-                     ]
+                     ],
+    "script-version":  "11203",
+    "build-config":  "MD",
+    "build-target":  "AE",
+    "install-name":  "ArmorRatingRescaledRemake"
 }

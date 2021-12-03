@@ -10,7 +10,7 @@ namespace
 			auto gameSetting = RE::GameSettingCollection::GetSingleton();
 			auto maxArmorRating = gameSetting->GetSetting("fMaxArmorRating");
 			maxArmorRating->data.f = static_cast<float>(*Config::OverrideArmorCap);
-
+			
 			INFO("Modified fMaxArmorRating"sv);
 		}
 	}
@@ -38,11 +38,11 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []()
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface * a_skse, SKSE::PluginInfo * a_info)
 {
 	DKUtil::Logger::Init(Version::PROJECT, Version::NAME);
-
+	
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
 	a_info->name = Version::PROJECT.data();
 	a_info->version = Version::MAJOR;
-
+	
 	if (a_skse->IsEditor()) {
 		ERROR("Loaded in editor, marking as incompatible"sv);
 		return false;
