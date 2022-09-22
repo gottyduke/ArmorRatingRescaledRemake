@@ -4,64 +4,69 @@
 
 namespace
 {
-#if ANNIVERSARY_EDITION
+	using namespace DKUtil::Alias;
 
 	// 1-6-323 7FF63457A390
-	constexpr std::uint64_t FUNC_1_ID = 38558;
-	constexpr std::uintptr_t FUNC_1_OFFSET_START = 0x80;
-	constexpr std::uintptr_t FUNC_1_OFFSET_END = 0x94;
+	constexpr std::uint64_t AE_Func1 = 38558;
+	constexpr std::uintptr_t AE_Func1_OffsetL = 0x80;
+	constexpr std::uintptr_t AE_Func1_OffsetH = 0x94;
 
 	// pre patch:
 	// xorps xmm1, xmm1
 	// movss xmm1, xmm7
 	// post patch:
 	// movss xmm7, xmm0
-	constexpr DKUtil::Hook::BranchInstruction FUNC_1_INSTRUCTION = {
+	constexpr Patch AE_Func1_Prolog = {
 		"\x0F\x57\xC9\xF3\x0F\x10\xCF",
-		7,
+		7
+	};
+
+	constexpr Patch AE_Func1_Epilog = {
 		"\xF3\x0F\x10\xF8",
 		4
 	};
 
-	// 1-6-323 
-	constexpr std::uint64_t FUNC_2_ID = 44014;
-	constexpr std::uintptr_t FUNC_2_OFFSET_START = 0xFF;
-	constexpr std::uintptr_t FUNC_2_OFFSET_END = 0x10D;
-
-#else
-
 	// 1-5-97 7FF710854FA2
-	constexpr std::uint64_t FUNC_1_ID = 37605;
-	constexpr std::uintptr_t FUNC_1_OFFSET_START = 0x82;
-	constexpr std::uintptr_t FUNC_1_OFFSET_END = 0x99;
+	constexpr std::uint64_t SE_Func1 = 37605;
+	constexpr std::uintptr_t SE_Func1_OffsetL = 0x82;
+	constexpr std::uintptr_t SE_Func1_OffsetH = 0x99;
 
 	// pre patch:
 	// xorps xmm1, xmm1
 	// movss xmm1, xmm8
 	// post	patch:
 	// movss xmm8, xmm0
-	constexpr DKUtil::Hook::BranchInstruction FUNC_1_INSTRUCTION = {
+	constexpr Patch SE_Func1_Prolog = {
 		"\x0F\x57\xC9\xF3\x41\x0F\x10\xC8",
-		8,
+		8
+	};
+	
+	constexpr Patch SE_Func1_Epilog = {
 		"\xF3\x44\x0F\x10\xC0",
 		5
 	};
-	
-	// 1-5-97 7FF710973617
-	constexpr std::uint64_t FUNC_2_ID = 42842;
-	constexpr std::uintptr_t FUNC_2_OFFSET_START = 0x107;
-	constexpr std::uintptr_t FUNC_2_OFFSET_END = 0x115;
 
-#endif
+	// 1-6-323
+	constexpr std::uint64_t AE_Func2 = 44014;
+	constexpr std::uintptr_t AE_Func2_OffsetL = 0xFF;
+	constexpr std::uintptr_t AE_Func2_OffsetH = 0x10D;
+
+	// 1-5-97 7FF710973617
+	constexpr std::uint64_t SE_Func2 = 42842;
+	constexpr std::uintptr_t SE_Func2_OffsetL = 0x107;
+	constexpr std::uintptr_t SE_Func2_OffsetH = 0x115;
 
 	// pre patch:
 	// xorps xmm1, xmm1
 	// movss xmm1, [rbp+0x77]
 	// post patch:
 	// movss [rbp+0x77], xmm0
-	constexpr DKUtil::Hook::BranchInstruction FUNC_2_INSTRUCTION = {
+	constexpr Patch Func2_Prolog = {
 		"\x0F\x57\xC9\xF3\x0F\x10\x4D\x77",
-		8,
+		8
+	};
+
+	constexpr Patch Func2_Epilog = {
 		"\xF3\x0F\x11\x45\x77",
 		5
 	};
@@ -98,15 +103,21 @@ namespace Hooks
 			*Config::ScalingFactor *= 5.0f;
 		}
 
-		DKUtil::Hook::BranchToID<FUNC_1_ID, FUNC_1_OFFSET_START, FUNC_1_OFFSET_END>(
-			&Hook_RescaleArmor,
-			FUNC_1_INSTRUCTION
-			);
+		auto handle1 = DKUtil::Hook::AddCaveHook(
+			DKUtil::Hook::IDToAbs(AE_Func1, SE_Func1),
+			DKUtil::Hook::RuntimeOffset(AE_Func1_OffsetL, AE_Func1_OffsetH, SE_Func1_OffsetL, SE_Func1_OffsetH),
+			FUNC_INFO(Hook_RescaleArmor),
+			DKUtil::Hook::RuntimePatch(&AE_Func1_Prolog, &SE_Func1_Prolog),
+			DKUtil::Hook::RuntimePatch(&AE_Func1_Epilog, &SE_Func1_Epilog));
 
-		DKUtil::Hook::BranchToID<FUNC_2_ID, FUNC_2_OFFSET_START, FUNC_2_OFFSET_END>(
-			&Hook_RescaleArmor,
-			FUNC_2_INSTRUCTION
-			);
+		auto handle2 = DKUtil::Hook::AddCaveHook(
+			DKUtil::Hook::IDToAbs(AE_Func2, SE_Func2),
+			DKUtil::Hook::RuntimeOffset(AE_Func2_OffsetL, AE_Func2_OffsetH, SE_Func2_OffsetL, SE_Func2_OffsetH),
+			FUNC_INFO(Hook_RescaleArmor),
+			&Func2_Prolog, &Func2_Epilog);
+
+		handle1->Enable();
+		handle2->Enable();
 
 		INFO("Hooks installed"sv);
 	}

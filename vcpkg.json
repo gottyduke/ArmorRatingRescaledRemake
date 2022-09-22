@@ -1,14 +1,14 @@
 {
-    "name":  "arrr",
-    "version-string":  "1.0.1",
-    "description":  "An SKSE plugin for skyrim special edition.",
-    "license":  "MIT",
+    "$schema":  "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name":  "armorratingrescaledremake",
+    "version-string":  "1.0.2",
+    "description":  "plugin template for CommonLibSSE-NG, used with SKSEPlugins workspace setup.",
     "dependencies":  [
-                         "boost-stl-interfaces",
                          "spdlog"
                      ],
-    "script-version":  "11203",
-    "build-config":  "MD",
-    "build-target":  "AE",
-    "install-name":  "ArmorRatingRescaledRemake"
+    "features":  {
+                     "mo2-install":  {
+                                         "description":  "ArmorRatingRescaledRemake"
+                                     }
+                 }
 }
